@@ -1,19 +1,22 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const userSchema = require('./models/userModel');
 
 const app = express();
 app.use(express.json());
 
-const SECRET = 'X8y484hnfinbhfhf';
+const SECRET = "X8y484hnfinbhfhf";
+
+dotenv.config();
 
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://ishaangaba97:Ishaan%4012345@cluster0.avvjzu4.mongodb.net/', { useNewUrlParser: true, dbName: "credentials"});
-
-// Define mongoose schema for User
-const userSchema = new mongoose.Schema({
-  username: { type: String, unique: true },
-  password: String
+const mongoURI = process.env.MONGODB_URI;
+mongoose.connect(mongoURI);
+const db = mongoose.connection;
+db.on('connected', () => {
+  console.log('MongoDB connected successfully');
 });
 
 const User = mongoose.model('User', userSchema);
