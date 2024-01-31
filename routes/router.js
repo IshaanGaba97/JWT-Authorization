@@ -1,52 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const dotenv = require("dotenv");
-const User = require("../models/userModel");
-const jwt = require("jsonwebtoken");
+const { createUser, loginUser, validateUser } = require('../controllers/userController');
 const authenticateJwt = require("../middlewares/authenticate");
+const { CREATE_USER_ENDPOINT, LOGIN_USER_ENDPOINT, VALIDATE_USER_ENDPOINT } = require('../constants/constants');
 
-dotenv.config();
-
-const SECRET = process.env.SECRET;
-
-router.post("/create-user", async (req, res) => {
-  const { username, password } = req.body;
-  console.log(username, password);
-  try {
-    const newUser = new User({ username, password: password });
-
-    await newUser.save();
-
-    res.json({ message: "User created successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "User already exists" });
-  }
-});
-
-router.post("/login-user", async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const user = await User.findOne({ username });
-
-    if (user) {
-      const token = jwt.sign({ username, role: "user" }, SECRET, {
-        expiresIn: "1h",
-      });
-      res.json({ message: "Logged in successfully", token });
-    } else {
-      res.status(403).json({ message: "Invalid username or password" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Error logging in" });
-  }
-});
-
-router.get("/validate-user", authenticateJwt, (req, res) => {
-  res.json({
-    message: "Token is valid",
-    username: req.user.username,
-  });
-});
+router.post(CREATE_USER_ENDPOINT, createUser);
+router.post(LOGIN_USER_ENDPOINT, loginUser);
+router.get(VALIDATE_USER_ENDPOINT, authenticateJwt, validateUser);
 
 module.exports = router;
